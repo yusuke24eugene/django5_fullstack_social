@@ -1,0 +1,48 @@
+# Python bytecode files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Virtual environments
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Logs
+*.log
+*.pot
+*.pyc
+*.pyo
+
+# Django-related
+db.sqlite3
+test_db/
+local_settings.py
+*.env
+media/
+static/
+*/migrations/*
+!*/migrations/__init__.py
+
+# IDEs
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+*.dockerfile
+
+# Testing coverage
+.coverage
+.tox/
+.nox/
