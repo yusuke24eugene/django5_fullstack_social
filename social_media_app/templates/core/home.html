@@ -2,7 +2,15 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto">
-    
+    {% if messages %}
+        <div class="mb-4">
+            <ul class="text-red-500">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
     <h1>Hello</h1>
 </div>
 {% endblock %}

@@ -1,16 +1,38 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponse
-from .forms import RegisterForm
-from django.contrib.auth import login as auth_login, logout as auth_logout
+from .forms import RegisterForm, LoginForm
+from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate
 from django.contrib.auth.models import Group
 
 # Create your views here.
 def home(request):
+    messages.get_messages(request)
     return render(request, 'core/home.html')
 
 def login(request):
-    return render(request, 'core/login.html')
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            # Get the user and authenticate them
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=username, password=password)
+
+            if user is not None:
+                # Log the user in
+                auth_login(request, user)
+                messages.success(request, f'Welcome back, {user.username}!')
+                return redirect('home')  # Redirect to home or dashboard
+            else:
+                messages.error(request, 'Invalid username or password.')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = LoginForm()
+
+    messages.get_messages(request)
+    return render(request, 'account/login.html', {'form': form})
 
 def register(request):
     if request.method == 'POST':
@@ -38,5 +60,7 @@ def register(request):
 
     return render(request, 'account/register.html', {'form': form})
 
-def logout():
-    pass
+def logout(request):
+    auth_logout(request)  # This logs the user out and clears the session
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('home')  # Redirect to the home page or any other page
