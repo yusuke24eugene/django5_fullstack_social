@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Create an Account</h2>
+
+        {% if messages %}
+            <div class="mb-4">
+                <ul class="text-red-500">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label for="username" class="block text-gray-700 font-medium">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <ul class="text-red-500 mt-1">
+                        {% for error in form.username.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700 font-medium">Email</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <ul class="text-red-500 mt-1">
+                        {% for error in form.email.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="block text-gray-700 font-medium">Password</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <ul class="text-red-500 mt-1">
+                        {% for error in form.password.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="password_confirm" class="block text-gray-700 font-medium">Confirm Password</label>
+                {{ form.password_confirm }}
+                {% if form.password_confirm.errors %}
+                    <ul class="text-red-500 mt-1">
+                        {% for error in form.password_confirm.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="first_name" class="block text-gray-700 font-medium">First Name</label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                    <ul class="text-red-500 mt-1">
+                        {% for error in form.first_name.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="last_name" class="block text-gray-700 font-medium">Last Name</label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                    <ul class="text-red-500 mt-1">
+                        {% for error in form.last_name.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="bio" class="block text-gray-700 font-medium">Bio</label>
+                {{ form.bio }}
+                {% if form.bio.errors %}
+                    <ul class="text-red-500 mt-1">
+                        {% for error in form.bio.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="location" class="block text-gray-700 font-medium">Location</label>
+                {{ form.location }}
+                {% if form.location.errors %}
+                    <ul class="text-red-500 mt-1">
+                        {% for error in form.location.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="birth_date" class="block text-gray-700 font-medium">Birth Date</label>
+                {{ form.birth_date }}
+                {% if form.birth_date.errors %}
+                    <ul class="text-red-500 mt-1">
+                        {% for error in form.birth_date.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="profile_picture" class="block text-gray-700 font-medium">Profile Picture</label>
+                {{ form.profile_picture }}
+                {% if form.profile_picture.errors %}
+                    <ul class="text-red-500 mt-1">
+                        {% for error in form.profile_picture.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-center mb-4">
+                <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                    Register
+                </button>
+            </div>
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="text-gray-600">Already have an account? <a href="{% url 'login' %}" class="text-blue-500 hover:underline">Login here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
