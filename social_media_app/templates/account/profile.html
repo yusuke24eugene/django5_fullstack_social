@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full">
+        <!-- Profile Header -->
+        <div class="text-center mb-6">
+            <!-- Profile Picture -->
+            <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}" 
+                alt="Profile Picture" class="mx-auto rounded-full w-32 h-32 object-cover border-4 border-gray-200 mb-4">
+            <h2 class="text-3xl font-bold text-gray-800">{{ user.username }}'s Profile</h2>
+        </div>
+
+        <!-- Full Name -->
+        <div class="mb-4">
+            <strong class="text-gray-700">Full Name:</strong>
+            <p>{{ user.first_name }} {{ user.last_name }}</p>
+        </div>
+
+        <!-- Bio Section -->
+        <div class="mb-4">
+            <strong class="text-gray-700">Bio:</strong>
+            <p>{{ user.bio|default:"No bio available." }}</p>
+        </div>
+
+        <!-- Location Section -->
+        <div class="mb-4">
+            <strong class="text-gray-700">Location:</strong>
+            <p>{{ user.location|default:"Not specified" }}</p>
+        </div>
+
+        <!-- Birth Date Section -->
+        <div class="mb-4">
+            <strong class="text-gray-700">Birth Date:</strong>
+            <p>{{ user.birth_date }}</p>
+        </div>
+
+        <!-- Followers Count -->
+        <div class="mb-4">
+            <strong class="text-gray-700">Followers:</strong>
+            <p>{{ user.followers_count }}</p>
+        </div>
+
+        <!-- Following Count -->
+        <div class="mb-6">
+            <strong class="text-gray-700">Following:</strong>
+            <p>{{ user.following_count }}</p>
+        </div>
+
+        <!-- Edit Profile Button -->
+        <div class="flex justify-center">
+            <a href="{% url 'profile_edit' %}" class="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                Edit Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

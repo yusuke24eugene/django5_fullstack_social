@@ -1,14 +1,34 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponse
-from .forms import RegisterForm, LoginForm
+from .forms import RegisterForm, LoginForm, ProfileEditForm
 from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate
 from django.contrib.auth.models import Group
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def home(request):
     messages.get_messages(request)
     return render(request, 'core/home.html')
+
+
+@login_required
+def profile_view(request):
+    return render(request, 'account/profile.html', {'user': request.user})
+
+@login_required
+def profile_edit_view(request):
+    user = request.user
+
+    if request.method == 'POST':
+        form = ProfileEditForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')  # Redirect to profile page after successful update
+    else:
+        form = ProfileEditForm(instance=user)
+
+    return render(request, 'account/profile_edit.html', {'form': form})
 
 def login(request):
     if request.method == 'POST':
