@@ -5,11 +5,15 @@ from .forms import RegisterForm, LoginForm, ProfileEditForm
 from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
+from posts.models import Post
+
 
 # Create your views here.
 def home(request):
     messages.get_messages(request)
-    return render(request, 'core/home.html')
+    # Fetch all posts, ordered by creation date
+    posts = Post.objects.all()
+    return render(request, 'core/home.html', {'posts': posts})
 
 
 @login_required
