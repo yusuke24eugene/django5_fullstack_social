@@ -9,7 +9,7 @@
         <div class="text-center mb-6">
             <!-- Profile Picture -->
             <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}" 
-                alt="Profile Picture" class="mx-auto rounded-full w-32 h-32 object-cover border-4 border-gray-200 mb-4">
+                alt="Profile Picture" class="mx-auto rounded-full w-32 h-32 object-cover object-center border-4 border-gray-200 mb-4">
             <h2 class="text-3xl font-bold text-gray-800">{{ user.username }}'s Profile</h2>
         </div>
 
