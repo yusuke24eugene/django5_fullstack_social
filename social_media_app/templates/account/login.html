@@ -4,17 +4,7 @@
 <div class="max-w-2xl mx-auto">
     <div class="bg-white p-8 rounded-lg shadow-lg w-full">
         <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Login to Your Account</h2>
-
-        {% if messages %}
-            <div class="mb-4">
-                <ul class="text-red-500">
-                    {% for message in messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-
+        
         <form method="POST">
             {% csrf_token %}
             

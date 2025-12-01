@@ -1,15 +1,20 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Post, Comment
 from .forms import PostForm, CommentForm
+from django.urls import reverse_lazy
 
 # Create your views here.
-class PostListView(ListView):
+class PostListView(LoginRequiredMixin, ListView):
     model = Post
     template_name = 'posts/post_list.html'
     context_object_name = 'posts'
     paginate_by = 10
+
+    def get_queryset(self):
+        # Filter posts by the logged-in user (if posts are user-specific)
+        return Post.objects.filter(user=self.request.user)
 
 # View to create a new post
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -22,7 +27,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return redirect('post_list')  # Redirect to post list view after creating
+        return reverse_lazy('post_list')  # Redirect to post list view after creating
 
 # View to create a comment on a post
 class CommentCreateView(LoginRequiredMixin, CreateView):
