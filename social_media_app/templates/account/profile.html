@@ -50,11 +50,13 @@
         </div>
 
         <!-- Edit Profile Button -->
-        <div class="flex justify-center">
-            <a href="{% url 'profile_edit' %}" class="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                Edit Profile
-            </a>
-        </div>
+        {% if user == request.user %}
+            <div class="flex justify-center">
+                <a href="{% url 'profile_edit' %}" class="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                    Edit Profile
+                </a>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

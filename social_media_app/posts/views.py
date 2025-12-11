@@ -1,9 +1,14 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Post, Comment
 from .forms import PostForm, CommentForm
 from django.urls import reverse_lazy
+from django.contrib.auth import get_user_model
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from .models import Post, Like
 
 # Create your views here.
 class PostListView(LoginRequiredMixin, ListView):
@@ -43,3 +48,56 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         post_id = self.kwargs['post_id']
         return redirect('post_detail', pk=post_id)  # Redirect back to the post detail view after creating the comment
+
+def user_profile(request, username):
+    # Retrieve the user by their username
+    user = get_object_or_404(get_user_model(), username=username)
+    
+    # Optionally, fetch posts related to the user
+    posts = Post.objects.filter(user=user)
+    
+    # Render the user profile page with the user's data and their posts
+    return render(request, 'account/profile.html', {'user': user, 'posts': posts})
+
+
+@login_required
+@require_POST
+def toggle_like(request, post_id):
+    """Toggle like for a post"""
+    try:
+        # Get the post
+        post = get_object_or_404(Post, id=post_id)
+        
+        # Check current like status
+        is_liked = post.likes.filter(id=request.user.id).exists()
+        
+        # Toggle like
+        if is_liked:
+            # Unlike
+            post.likes.remove(request.user)
+            liked = False
+        else:
+            # Like
+            post.likes.add(request.user)
+            liked = True
+        
+        # Get updated count
+        like_count = post.likes.count()
+        
+        return JsonResponse({
+            'success': True,
+            'liked': liked,
+            'like_count': like_count
+        })
+        
+    except Post.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Post not found'
+        }, status=404)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': 'An error occurred'
+        }, status=500)

@@ -9,33 +9,151 @@
   </div>
 
   <div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-4">All Posts</h1>
-    <div class="space-y-4">
-      {% for post in posts %}
-        <div class="bg-white p-4 rounded-lg shadow-lg">
-          <h2 class="text-xl font-semibold mb-2">{{ post.user.username }}</h2>
-          {% if post.image %}
-            <img src="{{ post.image.url }}" alt="Post Image" class="w-full h-96 object-contain mb-4">
-          {% endif %}
-          <p class="text-gray-700">{{ post.content|truncatewords:20 }}</p>
-          <p class="text-sm text-gray-500">{{ post.created_at|date:"M d, Y" }}</p>
-          {% comment %}
-          <a href="{% url 'post_detail' pk=post.pk %}" class="text-blue-500 hover:underline mt-2 block">Read more</a>
-          {% endcomment %}
+  {% csrf_token %}
+  <h1 class="text-3xl font-bold mb-4">All Posts</h1>
+  
+  <div class="space-y-4">
+    {% for post in posts %}
+      <div class="bg-white p-4 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-2">
+          <a href="{% url 'user_profile' username=post.user.username %}" class="text-blue-500 hover:underline">
+            {{ post.user.username }}
+          </a>
+        </h2>
+        
+        {% if post.image %}
+          <img src="{{ post.image.url }}" alt="Post Image" class="w-full h-96 object-contain mb-4">
+        {% endif %}
+        
+        <p class="text-gray-700">{{ post.content|truncatewords:20 }}</p>
+        <p class="text-sm text-gray-500">{{ post.created_at|date:"M d, Y" }}</p>
+
+        <div class="flex items-center space-x-3 mt-3">
+          <!-- Like button -->
+          <button 
+              class="like-btn text-blue-600 flex items-center px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 transition"
+              data-post-id="{{ post.id }}"
+              data-liked="{% if request.user in post.likes.all %}true{% else %}false{% endif %}">
+                {% if request.user in post.likes.all %}
+                  💔 Unlike
+                {% else %}
+                  ❤️ Like
+                {% endif %}
+            </button>
+
+          <!-- Like counter -->
+          <span id="like-count-{{ post.id }}" class="font-semibold text-gray-700">
+              {{ post.likes.count }}
+          </span>
         </div>
-      {% endfor %}
-    </div>
-
-    <div class="mt-4">
-      {% if posts.has_previous %}
-        <a href="?page=1" class="text-blue-500 hover:underline">First</a>
-        <a href="?page={{ posts.previous_page_number }}" class="text-blue-500 hover:underline">Previous</a>
-      {% endif %}
-
-      {% if posts.has_next %}
-        <a href="?page={{ posts.next_page_number }}" class="text-blue-500 hover:underline">Next</a>
-        <a href="?page={{ posts.paginator.num_pages }}" class="text-blue-500 hover:underline">Last</a>
-      {% endif %}
-    </div>
+      </div>
+    {% empty %}
+      <div class="text-center py-8">
+        <p class="text-gray-500">No posts yet.</p>
+      </div>
+    {% endfor %}
   </div>
+
+  <!-- Pagination -->
+  <div class="mt-4 flex justify-center space-x-4">
+    {% if posts.has_previous %}
+      <a href="?page=1" class="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition">First</a>
+      <a href="?page={{ posts.previous_page_number }}" class="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition">Previous</a>
+    {% endif %}
+    
+    {% if posts.paginator.num_pages > 1 %}
+    <span class="px-3 py-1 text-gray-600">
+      Page {{ posts.number }} of {{ posts.paginator.num_pages }}
+    </span>
+    {% endif %}
+    
+    {% if posts.has_next %}
+      <a href="?page={{ posts.next_page_number }}" class="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition">Next</a>
+      <a href="?page={{ posts.paginator.num_pages }}" class="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition">Last</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Function to get CSRF token
+    function getCSRFToken() {
+        // Try to get from hidden input first
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfInput && csrfInput.value) {
+            return csrfInput.value;
+        }
+        
+        // Fallback to cookies
+        const cookieMatch = document.cookie.match(/csrftoken=([^;]+)/);
+        return cookieMatch ? cookieMatch[1] : '';
+    }
+
+    // Add click listeners to all like buttons
+    document.querySelectorAll(".like-btn").forEach(button => {
+        button.addEventListener("click", async function () {
+            const postId = this.dataset.postId;
+            const button = this;
+            
+            // Get CSRF token
+            const csrfToken = getCSRFToken();
+            
+            if (!csrfToken) {
+                alert('Please refresh the page and try again.');
+                return;
+            }
+
+            // Show loading state
+            const originalText = button.textContent;
+            button.textContent = '...';
+            button.disabled = true;
+            
+            try {
+                // IMPORTANT: Update the URL based on your url configuration
+                // If your posts app is under /posts/, use: `/posts/like/${postId}/`
+                // If your posts app is at root, use: `/like/${postId}/`
+                const response = await fetch(`/posts/like/${postId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrfToken,
+                        "Content-Type": "application/json",
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Update like count
+                const likeCountElement = document.getElementById(`like-count-${postId}`);
+                if (likeCountElement) {
+                    likeCountElement.textContent = data.like_count;
+                }
+                
+                // Update button text and state
+                if (data.liked) {
+                    button.textContent = '💔 Unlike';
+                    button.dataset.liked = 'true';
+                } else {
+                    button.textContent = '❤️ Like';
+                    button.dataset.liked = 'false';
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error liking the post. Please try again.');
+                // Revert to original text
+                button.textContent = originalText;
+            } finally {
+                button.disabled = false;
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
