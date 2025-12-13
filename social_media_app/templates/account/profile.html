@@ -59,4 +59,40 @@
         {% endif %}
     </div>
 </div>
+
+<div class="space-y-4 mt-4">
+{% for post in posts %}
+    {% include 'posts/post_card.html' %}
+{% empty %}
+    <div class="text-center py-8">
+    <p class="text-gray-500">No posts yet.</p>
+    </div>
+{% endfor %}
+</div>
+
+<!-- Pagination -->
+<div class="mt-4 flex justify-center space-x-4">
+{% if posts.has_previous %}
+    <a href="?page=1" class="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition">First</a>
+    <a href="?page={{ posts.previous_page_number }}" class="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition">Previous</a>
+{% endif %}
+
+{% if posts.paginator.num_pages > 1 %}
+<span class="px-3 py-1 text-gray-600">
+    Page {{ posts.number }} of {{ posts.paginator.num_pages }}
+</span>
+{% endif %}
+
+{% if posts.has_next %}
+    <a href="?page={{ posts.next_page_number }}" class="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition">Next</a>
+    <a href="?page={{ posts.paginator.num_pages }}" class="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition">Last</a>
+{% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+  {% include 'scripts/like_button.html' %}
+
 {% endblock %}

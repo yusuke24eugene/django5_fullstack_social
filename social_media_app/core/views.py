@@ -15,10 +15,15 @@ def home(request):
     posts = Post.objects.all()
     return render(request, 'core/home.html', {'posts': posts})
 
-
 @login_required
 def profile_view(request):
-    return render(request, 'account/profile.html', {'user': request.user})
+    # Get the current user's posts
+    user_posts = Post.objects.filter(user=request.user).order_by('-created_at')
+    
+    return render(request, 'account/profile.html', {
+        'user': request.user,
+        'posts': user_posts
+    })
 
 @login_required
 def profile_edit_view(request):

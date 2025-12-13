@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Post, Comment
 from .forms import PostForm, CommentForm
@@ -26,13 +26,11 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
     template_name = 'posts/post_form.html'
+    success_url = reverse_lazy('post_list')
 
     def form_valid(self, form):
         form.instance.user = self.request.user  # Automatically assign the logged-in user
         return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse_lazy('post_list')  # Redirect to post list view after creating
 
 # View to create a comment on a post
 class CommentCreateView(LoginRequiredMixin, CreateView):
@@ -41,13 +39,14 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     template_name = 'posts/comment_form.html'
 
     def form_valid(self, form):
+        post_id = self.kwargs['post_id']  # Get post_id from URL
         form.instance.user = self.request.user  # Automatically assign the logged-in user
-        form.instance.post = Post.objects.get(id=self.kwargs['post_id'])  # Get the post by ID
+        form.instance.post = get_object_or_404(Post, id=post_id)  # Get the post by ID
         return super().form_valid(form)
 
     def get_success_url(self):
         post_id = self.kwargs['post_id']
-        return redirect('post_detail', pk=post_id)  # Redirect back to the post detail view after creating the comment
+        return reverse_lazy('post_detail', kwargs={'pk': post_id})
 
 def user_profile(request, username):
     # Retrieve the user by their username
@@ -101,3 +100,22 @@ def toggle_like(request, post_id):
             'success': False,
             'error': 'An error occurred'
         }, status=500)
+    
+class PostDetailView(DetailView):
+    model = Post
+    template_name = 'posts/post_detail.html'
+    context_object_name = 'post'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Get the post object
+        post = self.get_object()
+        # Get all comments for this post, ordered by creation date
+        comments = post.comments.all().order_by('created_at')
+        context['comments'] = comments
+        # Add comment form to context if you want to display it on the same page
+        context['comment_form'] = CommentForm()
+        return context
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Post, pk=self.kwargs['pk'])

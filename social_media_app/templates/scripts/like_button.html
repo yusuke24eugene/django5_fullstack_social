@@ -1,0 +1,80 @@
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Function to get CSRF token
+    function getCSRFToken() {
+        // Try to get from hidden input first
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfInput && csrfInput.value) {
+            return csrfInput.value;
+        }
+        
+        // Fallback to cookies
+        const cookieMatch = document.cookie.match(/csrftoken=([^;]+)/);
+        return cookieMatch ? cookieMatch[1] : '';
+    }
+
+    // Add click listeners to all like buttons
+    document.querySelectorAll(".like-btn").forEach(button => {
+        button.addEventListener("click", async function () {
+            const postId = this.dataset.postId;
+            const button = this;
+            
+            // Get CSRF token
+            const csrfToken = getCSRFToken();
+            
+            if (!csrfToken) {
+                alert('Please refresh the page and try again.');
+                return;
+            }
+
+            // Show loading state
+            const originalText = button.textContent;
+            button.textContent = '...';
+            button.disabled = true;
+            
+            try {
+                // IMPORTANT: Update the URL based on your url configuration
+                // If your posts app is under /posts/, use: `/posts/like/${postId}/`
+                // If your posts app is at root, use: `/like/${postId}/`
+                const response = await fetch(`/posts/like/${postId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrfToken,
+                        "Content-Type": "application/json",
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Update like count
+                const likeCountElement = document.getElementById(`like-count-${postId}`);
+                if (likeCountElement) {
+                    likeCountElement.textContent = data.like_count;
+                }
+                
+                // Update button text and state
+                if (data.liked) {
+                    button.textContent = '💔 Unlike';
+                    button.dataset.liked = 'true';
+                } else {
+                    button.textContent = '❤️ Like';
+                    button.dataset.liked = 'false';
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error liking the post. Please try again.');
+                // Revert to original text
+                button.textContent = originalText;
+            } finally {
+                button.disabled = false;
+            }
+        });
+    });
+});
+</script>
