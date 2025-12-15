@@ -57,6 +57,29 @@
                 </a>
             </div>
         {% endif %}
+
+        <!-- Follow Button -->
+        {% if request.user.is_authenticated and user != request.user %}
+        <form method="POST" action="{% url 'toggle_follow' user.username %}" class="flex justify-center">
+            {% csrf_token %}
+            <button
+                class="
+                {% if is_following %}
+                    bg-gray-200 text-gray-800 hover:bg-gray-300
+                {% else %}
+                    bg-blue-500 text-white hover:bg-blue-600
+                {% endif %}
+                px-6 py-2 rounded-lg font-semibold transition
+                "
+            >
+                {% if is_following %}
+                    Unfollow
+                {% else %}
+                    Follow
+                {% endif %}
+            </button>
+        </form>
+        {% endif %}
     </div>
 </div>
 

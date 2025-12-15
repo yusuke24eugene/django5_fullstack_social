@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponse
 from .forms import RegisterForm, LoginForm, ProfileEditForm
-from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate
+from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate, get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
 from posts.models import Post
+from django.shortcuts import get_object_or_404
 
+User = get_user_model()
 
 # Create your views here.
 def home(request):
@@ -17,12 +19,12 @@ def home(request):
 
 @login_required
 def profile_view(request):
-    # Get the current user's posts
+
     user_posts = Post.objects.filter(user=request.user).order_by('-created_at')
     
     return render(request, 'account/profile.html', {
         'user': request.user,
-        'posts': user_posts
+        'posts': user_posts,
     })
 
 @login_required
@@ -93,3 +95,17 @@ def logout(request):
     auth_logout(request)  # This logs the user out and clears the session
     messages.success(request, 'You have been logged out successfully.')
     return redirect('home')  # Redirect to the home page or any other page
+
+@login_required
+def toggle_follow(request, username):
+    target_user = get_object_or_404(User, username=username)
+
+    if target_user == request.user:
+        return redirect('profile', username=username)
+
+    if target_user.followers.filter(id=request.user.id).exists():
+        target_user.followers.remove(request.user)
+    else:
+        target_user.followers.add(request.user)
+
+    return redirect('user_profile', username=username)

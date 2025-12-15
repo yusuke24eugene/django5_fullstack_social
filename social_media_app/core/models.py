@@ -44,3 +44,8 @@ class CustomUser(AbstractUser):
     
     def following_count(self):
         return self.following.count()
+
+    def is_followed_by(self, user):
+        if not user.is_authenticated:
+            return False
+        return self.followers.filter(id=user.id).exists()

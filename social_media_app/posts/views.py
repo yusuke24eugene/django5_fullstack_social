@@ -52,11 +52,19 @@ def user_profile(request, username):
     # Retrieve the user by their username
     user = get_object_or_404(get_user_model(), username=username)
     
-    # Optionally, fetch posts related to the user
     posts = Post.objects.filter(user=user)
+
+    is_following = False
+
+    if request.user.is_authenticated:
+        is_following = user.followers.filter(id=request.user.id).exists()
     
     # Render the user profile page with the user's data and their posts
-    return render(request, 'account/profile.html', {'user': user, 'posts': posts})
+    return render(request, 'account/profile.html', {
+        'user': user,
+        'posts': posts,
+        'is_following': is_following,
+        })
 
 
 @login_required

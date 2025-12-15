@@ -10,6 +10,7 @@ urlpatterns = [
     path('edit-profile', views.profile_edit_view, name='profile_edit'),
     path('login', views.login, name='login'),
     path('logout', views.logout, name='logout'),
+    path('follow/<str:username>/', views.toggle_follow, name='toggle_follow'),
 ]
 
 # Serve media files in development
