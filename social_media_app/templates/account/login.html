@@ -4,6 +4,15 @@
 <div class="max-w-2xl mx-auto">
     <div class="bg-white p-8 rounded-lg shadow-lg w-full">
         <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Login to Your Account</h2>
+
+        <!-- Show form non-field errors -->
+        {% if form.non_field_errors %}
+            <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
         
         <form method="POST">
             {% csrf_token %}

@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.http import HttpResponse
 from .forms import RegisterForm, LoginForm, ProfileEditForm
 from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate, get_user_model
 from django.contrib.auth.models import Group
@@ -45,24 +44,15 @@ def login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            # Get the user and authenticate them
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(request, username=username, password=password)
-
-            if user is not None:
-                # Log the user in
-                auth_login(request, user)
-                messages.success(request, f'Welcome back, {user.username}!')
-                return redirect('home')  # Redirect to home or dashboard
-            else:
-                messages.error(request, 'Invalid username or password.')
-        else:
-            messages.error(request, 'Please correct the errors below.')
+            # Get the user from cleaned_data
+            user = form.cleaned_data.get('user')
+            auth_login(request, user)
+            messages.success(request, f'Welcome back, {user.username}!')
+            return redirect('home')
+        # If form is invalid, errors are already attached to form
     else:
         form = LoginForm()
 
-    messages.get_messages(request)
     return render(request, 'account/login.html', {'form': form})
 
 def register(request):

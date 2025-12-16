@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from .models import CustomUser
 
@@ -72,6 +73,18 @@ class LoginForm(forms.Form):
             'placeholder': 'Enter your password'
         })
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        username = cleaned_data.get('username')
+        password = cleaned_data.get('password')
+        
+        if username and password:
+            user = authenticate(username=username, password=password)
+            if user is None:
+                raise ValidationError("Invalid username or password")
+            cleaned_data['user'] = user
+        return cleaned_data
 
 class ProfileEditForm(forms.ModelForm):
     class Meta:
