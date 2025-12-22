@@ -6,6 +6,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
 from posts.models import Post
 from django.shortcuts import get_object_or_404
+from notifications.utils import create_notification  # Add this import
 
 User = get_user_model()
 
@@ -18,7 +19,6 @@ def home(request):
 
 @login_required
 def profile_view(request):
-
     user_posts = Post.objects.filter(user=request.user).order_by('-created_at')
     
     return render(request, 'account/profile.html', {
@@ -34,7 +34,16 @@ def profile_edit_view(request):
         form = ProfileEditForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
+            create_notification(
+                recipient=request.user,
+                notification_type='system',
+                message='Your profile has been updated successfully',
+                sender=None
+            )
+            messages.success(request, 'Profile updated successfully!')
             return redirect('profile')  # Redirect to profile page after successful update
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = ProfileEditForm(instance=user)
 
@@ -47,6 +56,15 @@ def login(request):
             # Get the user from cleaned_data
             user = form.cleaned_data.get('user')
             auth_login(request, user)
+            
+            # Create a login notification
+            create_notification(
+                recipient=user,
+                notification_type='system',
+                message=f'You logged in successfully from {request.META.get("REMOTE_ADDR", "unknown IP")}',
+                sender=None
+            )
+            
             messages.success(request, f'Welcome back, {user.username}!')
             return redirect('home')
         # If form is invalid, errors are already attached to form
@@ -72,6 +90,15 @@ def register(request):
 
             # Automatically log the user in after registration
             auth_login(request, user)
+            
+            # Create welcome notification
+            create_notification(
+                recipient=user,
+                notification_type='system',
+                message='Welcome to our platform! Your account has been created successfully.',
+                sender=None
+            )
+            
             messages.success(request, 'Account successfully created!')
             return redirect('home')  # Redirect to a success page or home page
         else:
@@ -82,6 +109,15 @@ def register(request):
     return render(request, 'account/register.html', {'form': form})
 
 def logout(request):
+    # Create logout notification before logging out
+    if request.user.is_authenticated:
+        create_notification(
+            recipient=request.user,
+            notification_type='system',
+            message='You have logged out successfully.',
+            sender=None
+        )
+    
     auth_logout(request)  # This logs the user out and clears the session
     messages.success(request, 'You have been logged out successfully.')
     return redirect('home')  # Redirect to the home page or any other page
@@ -91,11 +127,24 @@ def toggle_follow(request, username):
     target_user = get_object_or_404(User, username=username)
 
     if target_user == request.user:
-        return redirect('profile', username=username)
+        messages.error(request, 'You cannot follow yourself')
+        return redirect('user_profile', username=username)
 
     if target_user.followers.filter(id=request.user.id).exists():
+        # Unfollow
         target_user.followers.remove(request.user)
+        messages.success(request, f'You unfollowed {target_user.username}')
     else:
+        # Follow
         target_user.followers.add(request.user)
+        messages.success(request, f'You are now following {target_user.username}')
+        
+        # Create follow notification
+        create_notification(
+            recipient=target_user,
+            sender=request.user,
+            notification_type='follow',
+            message=f'{request.user.username} started following you'
+        )
 
     return redirect('user_profile', username=username)

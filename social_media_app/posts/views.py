@@ -9,6 +9,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from .models import Post, Like
+from notifications.utils import create_notification
+from django.contrib import messages
 
 # Create your views here.
 class PostListView(LoginRequiredMixin, ListView):
@@ -40,8 +42,19 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         post_id = self.kwargs['post_id']  # Get post_id from URL
+        post = get_object_or_404(Post, id=post_id)
+
         form.instance.user = self.request.user  # Automatically assign the logged-in user
-        form.instance.post = get_object_or_404(Post, id=post_id)  # Get the post by ID
+        form.instance.post = post
+
+        create_notification(
+            recipient=post.user,
+            sender=self.request.user,
+            notification_type='comment',
+            message=f'{self.request.user.username} commented on your post',
+            related_object=post
+        )
+
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -88,6 +101,16 @@ def toggle_like(request, post_id):
             post.likes.add(request.user)
             liked = True
         
+        # Create notification for post owner (if not liking your own post)
+        if post.user != request.user:
+            create_notification(
+                recipient=post.user,
+                sender=request.user,
+                notification_type='like',
+                message=f'{request.user.username} liked your post',
+                related_object=post
+            )
+
         # Get updated count
         like_count = post.likes.count()
         
