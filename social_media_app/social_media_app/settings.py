@@ -43,7 +43,14 @@ INSTALLED_APPS = [
     'core',
     'posts',
     'notifications',
+
+    # Django-tailwind
+    'tailwind',
+    'django_browser_reload',
+    'theme'
 ]
+
+TAILWIND_APP_NAME = 'theme'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -53,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_browser_reload.middleware.BrowserReloadMiddleware',
 ]
 
 ROOT_URLCONF = 'social_media_app.urls'
@@ -137,3 +145,7 @@ AUTH_USER_MODEL = 'core.CustomUser'
 CSRF_COOKIE_HTTPONLY = False  # Allows JavaScript to read the CSRF cookie
 CSRF_USE_SESSIONS = False  # Use cookie-based CSRF (default)
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]

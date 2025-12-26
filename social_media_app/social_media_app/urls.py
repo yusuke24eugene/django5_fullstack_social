@@ -24,6 +24,8 @@ urlpatterns = [
     path('', include('core.urls')),
     path('posts/', include('posts.urls')),
     path('notifications/', include('notifications.urls')),
+
+    path("__reload__/", include("django_browser_reload.urls")),
 ]
 
 if settings.DEBUG:
